@@ -1,0 +1,8 @@
+{
+  "title": "Futsal Booking Website",
+  "description": "Aplikasi pemesanan lapangan futsal",
+  "language": "id",
+  "robots": {
+    "index": true
+  }
+}
