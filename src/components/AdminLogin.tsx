@@ -150,19 +150,6 @@ export default function AdminLogin({ onLogin }: AdminLoginProps) {
               </div>
             )}
 
-            {/* Demo Credentials */}
-            <div
-              className="p-3 rounded text-xs"
-              style={{
-                backgroundColor: 'rgba(59, 130, 246, 0.1)',
-                color: 'var(--muted-foreground)',
-              }}
-            >
-              <p className="font-semibold mb-1">Demo Credentials:</p>
-              <p>Username: admin</p>
-              <p>Password: admin123</p>
-            </div>
-
             {/* Submit Button */}
             <button
               type="submit"
