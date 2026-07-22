@@ -1,7 +1,8 @@
 interface HeaderProps {
-  activeSection: 'fields' | 'transactions' | 'chat'
-  onNavigate: (s: 'fields' | 'transactions' | 'chat') => void
-  onAdminClick: () => void
+  activeSection: 'fields' | 'transactions' | 'chat' | 'dashboard'
+  onNavigate: (s: 'fields' | 'transactions' | 'chat' | 'dashboard') => void
+  userSession?: { name: string; email: string } | null
+  onDashboardClick?: () => void
 }
 
 const NAV_ITEMS: { key: 'fields' | 'transactions' | 'chat'; label: string }[] = [
@@ -10,7 +11,7 @@ const NAV_ITEMS: { key: 'fields' | 'transactions' | 'chat'; label: string }[] = 
   { key: 'chat', label: 'CHAT ADMIN' },
 ]
 
-export default function Header({ activeSection, onNavigate, onAdminClick }: HeaderProps) {
+export default function Header({ activeSection, onNavigate, userSession, onDashboardClick }: HeaderProps) {
   return (
     <header
       className="sticky top-0 z-50 flex items-center justify-between px-6 py-4"
@@ -29,6 +30,21 @@ export default function Header({ activeSection, onNavigate, onAdminClick }: Head
       </div>
 
       <nav className="flex items-center gap-1">
+        {userSession && (
+          <button
+            onClick={onDashboardClick}
+            className="px-4 py-2 rounded text-sm font-medium transition-all flex items-center gap-1.5"
+            style={{
+              fontFamily: 'Barlow Condensed, sans-serif',
+              letterSpacing: '0.05em',
+              fontSize: '0.9rem',
+              backgroundColor: activeSection === 'dashboard' ? 'var(--primary)' : 'transparent',
+              color: activeSection === 'dashboard' ? 'var(--primary-foreground)' : 'var(--muted-foreground)',
+            }}
+          >
+            📊 DASHBOARD
+          </button>
+        )}
         {NAV_ITEMS.map(item => (
           <button
             key={item.key}
@@ -48,20 +64,6 @@ export default function Header({ activeSection, onNavigate, onAdminClick }: Head
             {item.label}
           </button>
         ))}
-        <button
-          onClick={onAdminClick}
-          className="px-4 py-2 rounded text-sm font-medium transition-all flex items-center gap-1.5 ml-2"
-          style={{
-            fontFamily: 'Barlow Condensed, sans-serif',
-            letterSpacing: '0.05em',
-            fontSize: '0.9rem',
-            backgroundColor: 'rgba(34, 197, 94, 0.2)',
-            color: 'var(--primary)',
-            border: '1px solid var(--primary)',
-          }}
-        >
-          🔐 ADMIN
-        </button>
       </nav>
     </header>
   )

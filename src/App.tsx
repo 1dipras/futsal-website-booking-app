@@ -5,9 +5,21 @@ import FieldGrid from "./components/FieldGrid";
 import BookingModal from "./components/BookingModal";
 import TransactionHistory from "./components/TransactionHistory";
 import AdminChat from "./components/AdminChat";
-import AdminLogin from "./components/AdminLogin";
 import AdminDashboard from "./components/AdminDashboard";
-import type { Field, Booking, Transaction, AdminCredentials, AdminSession, DoubleBooking, RefundRequest } from "./types";
+import LandingPage from "./components/LandingPage";
+import AuthPage from "./components/AuthPage";
+import UserDashboard from "./components/UserDashboard";
+import type {
+  Field,
+  Booking,
+  Transaction,
+  AdminCredentials,
+  AdminSession,
+  UserCredentials,
+  UserSession,
+  DoubleBooking,
+  RefundRequest,
+} from "./types";
 
 const INITIAL_FIELDS: Field[] = [
   {
@@ -20,26 +32,7 @@ const INITIAL_FIELDS: Field[] = [
     image:
       "https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=600&h=400&fit=crop&auto=format",
     amenities: ["AC", "Loker", "Shower"],
-    bookings: [
-      {
-        id: "b1",
-        fieldId: "1",
-        date: getTodayStr(),
-        startTime: "08:00",
-        endTime: "10:00",
-        customerName: "Andi Saputra",
-        expiresAt: getFutureTime(45),
-      },
-      {
-        id: "b2",
-        fieldId: "1",
-        date: getTodayStr(),
-        startTime: "14:00",
-        endTime: "16:00",
-        customerName: "Budi Santoso",
-        expiresAt: getFutureTime(120),
-      },
-    ],
+    bookings: [],
   },
   {
     id: "2",
@@ -49,19 +42,9 @@ const INITIAL_FIELDS: Field[] = [
     capacity: 12,
     pricePerHour: 175000,
     image:
-      "https://unsplash.com/id/foto/pria-dengan-kemeja-jersey-oranye-dan-putih-dan-celana-pendek-hitam-berdiri-di-atas-tenis-hijau-dan-putih-qZWMMkvesc4",
+      "https://images.unsplash.com/photo-1517649763962-0c623066013b?w=600&h=400&fit=crop&auto=format",
     amenities: ["AC", "Loker", "Kantin"],
-    bookings: [
-      {
-        id: "b3",
-        fieldId: "2",
-        date: getTodayStr(),
-        startTime: "10:00",
-        endTime: "12:00",
-        customerName: "Candra Wijaya",
-        expiresAt: getFutureTime(200),
-      },
-    ],
+    bookings: [],
   },
   {
     id: "3",
@@ -71,7 +54,7 @@ const INITIAL_FIELDS: Field[] = [
     capacity: 10,
     pricePerHour: 120000,
     image:
-      "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=600&h=400&fit=crop&auto=format",
+      "https://images.unsplash.com/photo-1551958219-acbc608c6377?w=600&h=400&fit=crop&auto=format",
     amenities: ["Tribun", "Lampu Malam", "Parkir"],
     bookings: [],
   },
@@ -85,35 +68,7 @@ const INITIAL_FIELDS: Field[] = [
     image:
       "https://images.unsplash.com/photo-1431324155629-1a6deb1dec8d?w=600&h=400&fit=crop&auto=format",
     amenities: ["AC", "Shower", "Kantin"],
-    bookings: [
-      {
-        id: "b4",
-        fieldId: "4",
-        date: getTodayStr(),
-        startTime: "09:00",
-        endTime: "11:00",
-        customerName: "Dian Rahayu",
-        expiresAt: getFutureTime(30),
-      },
-      {
-        id: "b5",
-        fieldId: "4",
-        date: getTodayStr(),
-        startTime: "13:00",
-        endTime: "15:00",
-        customerName: "Eko Prasetyo",
-        expiresAt: getFutureTime(300),
-      },
-      {
-        id: "b6",
-        fieldId: "4",
-        date: getTodayStr(),
-        startTime: "19:00",
-        endTime: "21:00",
-        customerName: "Feri Kurniawan",
-        expiresAt: getFutureTime(480),
-      },
-    ],
+    bookings: [],
   },
   {
     id: "5",
@@ -143,32 +98,14 @@ const INITIAL_FIELDS: Field[] = [
       "Kantin VIP",
       "Tribun",
     ],
-    bookings: [
-      {
-        id: "b7",
-        fieldId: "6",
-        date: getTodayStr(),
-        startTime: "07:00",
-        endTime: "09:00",
-        customerName: "Gilang Ramadhan",
-        expiresAt: getFutureTime(15),
-      },
-    ],
+    bookings: [],
   },
 ];
 
-function getTodayStr() {
-  return new Date().toISOString().split("T")[0];
-}
-
-function getFutureTime(minutes: number): number {
-  return Date.now() + minutes * 60 * 1000;
-}
-
 export default function App() {
   const [activeSection, setActiveSection] = useState<
-    "fields" | "transactions" | "chat"
-  >("fields");
+    "fields" | "transactions" | "chat" | "dashboard"
+  >("dashboard");
   const [fields, setFields] = useState<Field[]>(INITIAL_FIELDS);
   const [bookingModal, setBookingModal] = useState<{
     open: boolean;
@@ -179,7 +116,12 @@ export default function App() {
   >([]);
   const [now, setNow] = useState(Date.now());
   const [adminSession, setAdminSession] = useState<AdminSession | null>(null);
-  const [showAdminLogin, setShowAdminLogin] = useState(false);
+  const [userSession, setUserSession] = useState<UserSession | null>(null);
+  const [userAccounts, setUserAccounts] = useState<UserCredentials[]>(() => {
+    localStorage.removeItem('userAccounts'); // Clear any existing fake data
+    return [];
+  });
+  const [showAuth, setShowAuth] = useState(false);
   const [doubleBookings, setDoubleBookings] = useState<DoubleBooking[]>([]);
   const [refundRequests, setRefundRequests] = useState<RefundRequest[]>([]);
 
@@ -188,23 +130,75 @@ export default function App() {
     return () => clearInterval(id);
   }, []);
 
-  const handleAdminLogin = (credentials: AdminCredentials) => {
-    // Simple authentication - in production, validate against backend
-    if (
-      (credentials.username === "admin" || credentials.username.length >= 3) &&
-      (credentials.password === "admin123" || credentials.password.length >= 6)
-    ) {
+  useEffect(() => {
+    localStorage.setItem('userAccounts', JSON.stringify(userAccounts));
+  }, [userAccounts]);
+
+  const handleLogin = (email: string, password: string) => {
+    console.log("App handleLogin called:", email, password);
+    // 1. Admin login check
+    if (email.toLowerCase() === "admin" && password === "admin123") {
+      console.log("Admin credentials matched, setting admin session");
       setAdminSession({
-        username: credentials.username,
+        username: "admin",
         loginTime: Date.now(),
       });
-    } else {
-      alert("Login gagal");
+      setShowAuth(false);
+      return;
     }
+
+    // 2. User login check
+    const user = userAccounts.find(
+      (account) =>
+        account.email.toLowerCase() === email.toLowerCase() &&
+        account.password === password,
+    );
+
+    if (user) {
+      console.log("User credentials matched, setting user session");
+      setUserSession({ name: user.name, email: user.email, loginTime: Date.now() });
+      setShowAuth(false);
+      setActiveSection("dashboard");
+    } else {
+      console.log("No matching credentials found");
+      alert("Email atau password tidak cocok");
+    }
+  };
+
+  const handleRegister = (credentials: UserCredentials) => {
+    if (
+      userAccounts.some(
+        (account) => account.email.toLowerCase() === credentials.email.toLowerCase(),
+      )
+    ) {
+      alert("Email sudah terdaftar");
+      return;
+    }
+    setUserAccounts((prev) => [...prev, credentials]);
+    setUserSession({ name: credentials.name, email: credentials.email, loginTime: Date.now() });
+    setShowAuth(false);
+    setActiveSection("dashboard");
   };
 
   const handleAdminLogout = () => {
     setAdminSession(null);
+  };
+
+  const handleUserLogout = () => {
+    setUserSession(null);
+    setActiveSection("dashboard");
+  };
+
+  const handleBrowse = () => {
+    setShowAuth(false);
+    setActiveSection("fields");
+  };
+
+  const handleNavigate = (section: "fields" | "transactions" | "chat" | "dashboard") => {
+    setActiveSection(section);
+    if (section !== "dashboard") {
+      setShowAuth(false);
+    }
   };
 
   // Detect double bookings
@@ -385,8 +379,9 @@ export default function App() {
     );
   };
 
-  // Admin Dashboard View
+  //  Admin Dashboard View
   if (adminSession) {
+    console.log("Rendering AdminDashboard for:", adminSession.username);
     return (
       <AdminDashboard
         fields={fields}
@@ -397,66 +392,60 @@ export default function App() {
         doubleBookings={doubleBookings}
         onApproveRefund={handleApproveRefund}
         onRejectRefund={handleRejectRefund}
+        userAccounts={userAccounts}
       />
     );
   }
 
-  // Admin Login View
-  if (showAdminLogin) {
-    return (
-      <>
-        <AdminLogin onLogin={handleAdminLogin} />
-        <button
-          onClick={() => setShowAdminLogin(false)}
-          className="fixed bottom-4 left-4 text-sm px-3 py-1 rounded"
-          style={{
-            backgroundColor: "var(--muted)",
-            color: "var(--muted-foreground)",
-            zIndex: 50,
-          }}
-        >
-          ← Kembali
-        </button>
-      </>
-    );
-  }
-
-  return (
-    <div
-      className="min-h-screen"
-      style={{
-        backgroundColor: "var(--background)",
-        color: "var(--foreground)",
-      }}
-    >
-      <Header
-        activeSection={activeSection}
-        onNavigate={setActiveSection}
-        onAdminClick={() => setShowAdminLogin(true)}
-      />
-      {activeSection === "fields" ? (
-        <>
-          <HeroSection />
-          <FieldGrid
-            fields={fields}
-            now={now}
-            onBook={handleOpenBooking}
-          />
-        </>
-      ) : activeSection === "transactions" ? (
-        <TransactionHistory transactions={transactions} />
-      ) : (
-        <AdminChat />
-      )}
-      {bookingModal.open && bookingModal.field && (
-        <BookingModal
-          field={bookingModal.field}
-          onClose={() =>
-            setBookingModal({ open: false, field: null })
-          }
-          onConfirm={handleConfirmBooking}
+  //  User Dashboard & Main App View (Logika Sesi User)
+  if (userSession) {
+    if (activeSection === "dashboard") {
+      return (
+        <UserDashboard
+          userSession={userSession}
+          fields={fields}
+          transactions={transactions}
+          onBrowse={handleBrowse}
+          onLogout={handleUserLogout}
         />
-      )}
-    </div>
+      );
+    }
+    
+    // Jika tidak di dashboard, tampilkan menu utama (Fields/Chat/Transactions)
+    return (
+      <div className="min-h-screen" style={{ backgroundColor: "var(--background)", color: "var(--foreground)" }}>
+        <Header activeSection={activeSection} onNavigate={handleNavigate} userSession={userSession} onDashboardClick={() => setActiveSection("dashboard")} />
+        {activeSection === "fields" ? (
+          <> <HeroSection /> <FieldGrid fields={fields} now={now} onBook={handleOpenBooking} /> </>
+        ) : activeSection === "transactions" ? (
+          <TransactionHistory transactions={transactions} />
+        ) : (
+          <AdminChat />
+        )}
+        {bookingModal.open && bookingModal.field && (
+          <BookingModal field={bookingModal.field} onClose={() => setBookingModal({ open: false, field: null })} onConfirm={handleConfirmBooking} />
+        )}
+      </div>
+    );
+  }
+
+  // Auth Page View
+  if (showAuth) {
+    return (
+      <AuthPage
+        onLogin={handleLogin}
+        onRegister={handleRegister}
+        onClose={() => setShowAuth(false)}
+      />
+    );
+  }
+
+  // Landing Page (Hanya tampil kalau tidak ada sesi dan tidak sedang Auth)
+  return (
+    <LandingPage
+      fields={fields}
+      onAuth={() => setShowAuth(true)}
+      onBrowse={handleBrowse}
+    />
   );
 }

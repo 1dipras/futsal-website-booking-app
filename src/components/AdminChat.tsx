@@ -13,7 +13,7 @@ const ADMIN_CONTACTS = [
     platform: 'WhatsApp',
     icon: '📱',
     value: '+62 812-3456-7890',
-    href: 'https://wa.me/6281276597403',
+    href: 'https://wa.me/6283190331511',
     color: '#25D366',
     bg: 'rgba(37,211,102,0.08)',
     border: 'rgba(37,211,102,0.25)',
@@ -78,7 +78,7 @@ function getAutoReply(text: string): string {
       return reply
     }
   }
-  return 'Terima kasih sudah menghubungi FutsalZone! 😊 Admin kami akan segera membalas dalam beberapa menit. Untuk respons lebih cepat, bisa langsung hubungi via WhatsApp di +62 812-3456-7890.'
+  return 'Terima kasih sudah menghubungi FutsalZone! 😊 Admin kami akan segera membalas dalam beberapa menit. Untuk respons lebih cepat, bisa langsung hubungi via WhatsApp di +62 831-9033-1511.'
 }
 
 function formatTime(ts: number): string {
@@ -173,7 +173,7 @@ export default function AdminChat() {
                 </div>
                 <div className="ml-auto flex gap-2">
                   <a
-                    href="https://wa.me/6281234567890"
+                    href="https://wa.me/6283190331511"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-opacity hover:opacity-80"

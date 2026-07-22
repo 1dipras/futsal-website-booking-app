@@ -45,6 +45,18 @@ export interface AdminSession {
   loginTime: number
 }
 
+export interface UserCredentials {
+  name: string
+  email: string
+  password: string
+}
+
+export interface UserSession {
+  name: string
+  email: string
+  loginTime: number
+}
+
 export interface DoubleBooking {
   id: string
   fieldId: string

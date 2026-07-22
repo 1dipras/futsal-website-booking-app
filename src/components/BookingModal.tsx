@@ -29,9 +29,13 @@ function getEndTime(start: string, duration: number): string {
   return `${String(eh).padStart(2, '0')}:${String(em).padStart(2, '0')}`
 }
 
-function isSlotBooked(field: Field, slot: string): boolean {
+function isSlotBooked(field: Field, slot: string, date: string, duration: number): boolean {
+  const endTime = getEndTime(slot, duration)
   return field.bookings.some(b => {
-    return slot >= b.startTime && slot < b.endTime
+    // Check if same date
+    if (b.date !== date) return false
+    // Check for time overlap: (start1 < end2) && (end1 > start2)
+    return slot < b.endTime && endTime > b.startTime
   })
 }
 
@@ -52,7 +56,7 @@ export default function BookingModal({ field, onClose, onConfirm }: BookingModal
     if (!name.trim()) { setError('Nama wajib diisi'); return }
     if (!phone.trim()) { setError('No. HP wajib diisi'); return }
     if (!startTime) { setError('Pilih waktu mulai'); return }
-    if (isSlotBooked(field, startTime)) { setError('Slot ini sudah terboking'); return }
+    if (isSlotBooked(field, startTime, date, duration)) { setError('Slot ini sudah terboking'); return }
     setError('')
     setStep('payment')
   }
@@ -170,7 +174,7 @@ export default function BookingModal({ field, onClose, onConfirm }: BookingModal
                 <label className="text-xs font-medium" style={{ color: 'var(--muted-foreground)' }}>Waktu Mulai</label>
                 <div className="grid grid-cols-4 gap-1.5">
                   {TIME_SLOTS.map(slot => {
-                    const booked = isSlotBooked(field, slot)
+                    const booked = isSlotBooked(field, slot, date, duration)
                     const selected = startTime === slot
                     return (
                       <button

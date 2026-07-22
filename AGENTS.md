@@ -1,6 +1,7 @@
-# figma-make-app
+# This app make for study and learn
 
-React + Vite + Tailwind CSS project running inside Figma Make.
+React + Vite + Tailwind CSS project running inside anyware Make.
+
 
 ## Development Server
 

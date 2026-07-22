@@ -1,4 +1,4 @@
-import type { Field, Transaction, DoubleBooking, RefundRequest } from '../types'
+import type { Field, Transaction, DoubleBooking, RefundRequest, UserCredentials } from '../types'
 
 interface AdminDashboardProps {
   fields: Field[]
@@ -9,6 +9,7 @@ interface AdminDashboardProps {
   doubleBookings: DoubleBooking[]
   onApproveRefund: (refundId: string) => void
   onRejectRefund: (refundId: string) => void
+  userAccounts: UserCredentials[]
 }
 
 export default function AdminDashboard({
@@ -17,9 +18,9 @@ export default function AdminDashboard({
   onLogout,
   adminName,
   refundRequests,
-  doubleBookings,
   onApproveRefund,
   onRejectRefund,
+  userAccounts,
 }: AdminDashboardProps) {
   const totalBookings = fields.reduce((sum, field) => sum + field.bookings.length, 0)
   const totalRevenue = transactions.reduce((sum, t) => (t.status === 'success' ? sum + t.amount : sum), 0)
@@ -402,6 +403,56 @@ export default function AdminDashboard({
             </div>
           </div>
         )}
+
+        {/* User Management Section */}
+        <div
+          className="rounded-lg border p-6 mt-6"
+          style={{ backgroundColor: 'var(--card)', borderColor: 'var(--border)' }}
+        >
+          <h2
+            className="text-lg font-bold mb-4 flex items-center gap-2"
+            style={{ color: 'var(--foreground)' }}
+          >
+            👥 Manajemen User ({userAccounts.length})
+          </h2>
+          <div className="space-y-3">
+            {userAccounts.map((user) => (
+              <div
+                key={user.email}
+                className="p-4 rounded border"
+                style={{
+                  backgroundColor: 'var(--background)',
+                  borderColor: 'var(--border)',
+                }}
+              >
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="font-semibold text-sm" style={{ color: 'var(--foreground)' }}>
+                      {user.name}
+                    </p>
+                    <p className="text-xs mt-1" style={{ color: 'var(--muted-foreground)' }}>
+                      {user.email}
+                    </p>
+                  </div>
+                  <span
+                    className="text-xs font-medium px-2 py-1 rounded"
+                    style={{
+                      backgroundColor: 'rgba(34, 197, 94, 0.2)',
+                      color: '#22c55e',
+                    }}
+                  >
+                    Aktif
+                  </span>
+                </div>
+              </div>
+            ))}
+            {userAccounts.length === 0 && (
+              <p className="text-sm text-center py-6" style={{ color: 'var(--muted-foreground)' }}>
+                Tidak ada user terdaftar
+              </p>
+            )}
+          </div>
+        </div>
       </main>
     </div>
   )
