@@ -4,9 +4,10 @@ interface LandingPageProps {
   fields: Field[]
   onAuth: () => void
   onBrowse: () => void
+  onAdminLogin: () => void
 }
 
-export default function LandingPage({ fields, onAuth, onBrowse }: LandingPageProps) {
+export default function LandingPage({ fields, onAuth, onBrowse, onAdminLogin }: LandingPageProps) {
   const featured = fields.slice(0, 3)
 
   return (
@@ -19,6 +20,13 @@ export default function LandingPage({ fields, onAuth, onBrowse }: LandingPagePro
             </span>
           </div>
           <div className="flex items-center gap-3">
+            <button
+              onClick={onAdminLogin}
+              className="rounded-full px-4 py-2 text-xs font-semibold transition-colors"
+              style={{ backgroundColor: 'rgba(239,68,68,0.16)', color: '#ef4444' }}
+            >
+              Admin
+            </button>
             <button
               onClick={onAuth}
               className="rounded-full px-5 py-2 text-sm font-semibold transition-colors"

@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import type { Field, Transaction, DoubleBooking, RefundRequest, UserCredentials } from '../types'
 
 interface AdminDashboardProps {
@@ -10,6 +11,7 @@ interface AdminDashboardProps {
   onApproveRefund: (refundId: string) => void
   onRejectRefund: (refundId: string) => void
   userAccounts: UserCredentials[]
+  onUpdateFieldImage: (fieldId: string, imageUrl: string) => void
 }
 
 export default function AdminDashboard({
@@ -21,7 +23,10 @@ export default function AdminDashboard({
   onApproveRefund,
   onRejectRefund,
   userAccounts,
+  onUpdateFieldImage,
 }: AdminDashboardProps) {
+  const [editingImageField, setEditingImageField] = useState<string | null>(null)
+  const [newImageUrl, setNewImageUrl] = useState('')
   const totalBookings = fields.reduce((sum, field) => sum + field.bookings.length, 0)
   const totalRevenue = transactions.reduce((sum, t) => (t.status === 'success' ? sum + t.amount : sum), 0)
   const pendingTransactions = transactions.filter((t) => t.status === 'pending').length
@@ -199,10 +204,70 @@ export default function AdminDashboard({
                       {field.bookings.length > 0 ? 'Terisi' : 'Kosong'}
                     </span>
                   </div>
-                  <div className="flex items-center justify-between text-xs" style={{ color: 'var(--muted-foreground)' }}>
+                  <div className="flex items-center justify-between text-xs mb-2" style={{ color: 'var(--muted-foreground)' }}>
                     <p>{field.type} · {field.surface}</p>
                     <p>{field.bookings.length} booking</p>
                   </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => {
+                        setEditingImageField(field.id)
+                        setNewImageUrl(field.image)
+                      }}
+                      className="text-xs px-3 py-1 rounded"
+                      style={{
+                        backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                        color: '#3b82f6',
+                      }}
+                    >
+                      Edit Foto
+                    </button>
+                  </div>
+                  {editingImageField === field.id && (
+                    <div className="mt-3 space-y-2">
+                      <input
+                        type="text"
+                        value={newImageUrl}
+                        onChange={(e) => setNewImageUrl(e.target.value)}
+                        placeholder="URL gambar baru"
+                        className="w-full px-3 py-2 rounded text-xs border"
+                        style={{
+                          backgroundColor: 'var(--input)',
+                          borderColor: 'var(--border)',
+                          color: 'var(--foreground)',
+                        }}
+                      />
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => {
+                            onUpdateFieldImage(field.id, newImageUrl)
+                            setEditingImageField(null)
+                            setNewImageUrl('')
+                          }}
+                          className="flex-1 text-xs px-3 py-1 rounded"
+                          style={{
+                            backgroundColor: 'rgba(34, 197, 94, 0.2)',
+                            color: '#22c55e',
+                          }}
+                        >
+                          Simpan
+                        </button>
+                        <button
+                          onClick={() => {
+                            setEditingImageField(null)
+                            setNewImageUrl('')
+                          }}
+                          className="flex-1 text-xs px-3 py-1 rounded"
+                          style={{
+                            backgroundColor: 'rgba(239, 68, 68, 0.2)',
+                            color: '#ef4444',
+                          }}
+                        >
+                          Batal
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>

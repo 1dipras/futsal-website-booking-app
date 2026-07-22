@@ -6,6 +6,7 @@ import BookingModal from "./components/BookingModal";
 import TransactionHistory from "./components/TransactionHistory";
 import AdminChat from "./components/AdminChat";
 import AdminDashboard from "./components/AdminDashboard";
+import AdminLogin from "./components/AdminLogin";
 import LandingPage from "./components/LandingPage";
 import AuthPage from "./components/AuthPage";
 import UserDashboard from "./components/UserDashboard";
@@ -106,7 +107,17 @@ export default function App() {
   const [activeSection, setActiveSection] = useState<
     "fields" | "transactions" | "chat" | "dashboard"
   >("dashboard");
-  const [fields, setFields] = useState<Field[]>(INITIAL_FIELDS);
+  const [fields, setFields] = useState<Field[]>(() => {
+    const saved = localStorage.getItem('fields');
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch {
+        return INITIAL_FIELDS;
+      }
+    }
+    return INITIAL_FIELDS;
+  });
   const [bookingModal, setBookingModal] = useState<{
     open: boolean;
     field: Field | null;
@@ -118,10 +129,18 @@ export default function App() {
   const [adminSession, setAdminSession] = useState<AdminSession | null>(null);
   const [userSession, setUserSession] = useState<UserSession | null>(null);
   const [userAccounts, setUserAccounts] = useState<UserCredentials[]>(() => {
-    localStorage.removeItem('userAccounts'); // Clear any existing fake data
+    const saved = localStorage.getItem('userAccounts');
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch {
+        return [];
+      }
+    }
     return [];
   });
   const [showAuth, setShowAuth] = useState(false);
+  const [showAdminLogin, setShowAdminLogin] = useState(false);
   const [doubleBookings, setDoubleBookings] = useState<DoubleBooking[]>([]);
   const [refundRequests, setRefundRequests] = useState<RefundRequest[]>([]);
 
@@ -131,23 +150,15 @@ export default function App() {
   }, []);
 
   useEffect(() => {
+    localStorage.setItem('fields', JSON.stringify(fields));
+  }, [fields]);
+
+  useEffect(() => {
     localStorage.setItem('userAccounts', JSON.stringify(userAccounts));
   }, [userAccounts]);
 
   const handleLogin = (email: string, password: string) => {
-    console.log("App handleLogin called:", email, password);
-    // 1. Admin login check
-    if (email.toLowerCase() === "admin" && password === "admin123") {
-      console.log("Admin credentials matched, setting admin session");
-      setAdminSession({
-        username: "admin",
-        loginTime: Date.now(),
-      });
-      setShowAuth(false);
-      return;
-    }
-
-    // 2. User login check
+    // User login check only (admin uses separate login portal)
     const user = userAccounts.find(
       (account) =>
         account.email.toLowerCase() === email.toLowerCase() &&
@@ -155,13 +166,23 @@ export default function App() {
     );
 
     if (user) {
-      console.log("User credentials matched, setting user session");
       setUserSession({ name: user.name, email: user.email, loginTime: Date.now() });
       setShowAuth(false);
       setActiveSection("dashboard");
     } else {
-      console.log("No matching credentials found");
       alert("Email atau password tidak cocok");
+    }
+  };
+
+  const handleAdminLogin = (credentials: AdminCredentials) => {
+    if (credentials.username.toLowerCase() === "admin" && credentials.password === "admin123") {
+      setAdminSession({
+        username: "admin",
+        loginTime: Date.now(),
+      });
+      setShowAdminLogin(false);
+    } else {
+      alert("Username atau password admin tidak cocok");
     }
   };
 
@@ -379,6 +400,14 @@ export default function App() {
     );
   };
 
+  const handleUpdateFieldImage = (fieldId: string, imageUrl: string) => {
+    setFields((prev) =>
+      prev.map((field) =>
+        field.id === fieldId ? { ...field, image: imageUrl } : field
+      )
+    );
+  };
+
   //  Admin Dashboard View
   if (adminSession) {
     console.log("Rendering AdminDashboard for:", adminSession.username);
@@ -393,6 +422,7 @@ export default function App() {
         onApproveRefund={handleApproveRefund}
         onRejectRefund={handleRejectRefund}
         userAccounts={userAccounts}
+        onUpdateFieldImage={handleUpdateFieldImage}
       />
     );
   }
@@ -440,12 +470,22 @@ export default function App() {
     );
   }
 
+  // Admin Login View
+  if (showAdminLogin) {
+    return (
+      <AdminLogin
+        onLogin={handleAdminLogin}
+      />
+    );
+  }
+
   // Landing Page (Hanya tampil kalau tidak ada sesi dan tidak sedang Auth)
   return (
     <LandingPage
       fields={fields}
       onAuth={() => setShowAuth(true)}
       onBrowse={handleBrowse}
+      onAdminLogin={() => setShowAdminLogin(true)}
     />
   );
 }

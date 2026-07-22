@@ -17,7 +17,6 @@ export default function AuthPage({ onLogin, onRegister, onClose }: AuthPageProps
 
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
-    console.log("AuthPage handleSubmit:", { mode, email, password });
     setError('');
 
     // 1. Validasi dasar (berlaku untuk login dan register)
@@ -44,8 +43,7 @@ export default function AuthPage({ onLogin, onRegister, onClose }: AuthPageProps
       // Kirim ke App.tsx
       onRegister({ name, email, password });
     } else {
-      // 3. Jika mode login, langsung eksekusi
-      console.log("Calling onLogin with:", email, password);
+      // 3. Jika mode login user, langsung eksekusi
       onLogin(email, password);
     }
   };
